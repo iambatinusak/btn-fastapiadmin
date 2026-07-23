@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block title %}Delete {{ ma.model.__name__ }} — {{ admin.title }}{% endblock %}
+
+{% block breadcrumb %}
+<a href="{{ admin.prefix }}/">{{ admin.title }}</a>
+<span class="breadcrumb-sep">/</span>
+<a href="{{ admin.prefix }}/{{ model_name }}">{{ ma.verbose_name_plural }}</a>
+<span class="breadcrumb-sep">/</span>
+<span class="breadcrumb-cur">Delete</span>
+{% endblock %}
+
+{% block content %}
+<div style="max-width:480px;margin:40px auto;">
+  <div class="card">
+    <div class="form-body" style="text-align:center;padding:40px 32px 28px;">
+      <div style="width:60px;height:60px;border-radius:14px;background:#fef2f2;color:#ef4444;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <polyline points="3 6 5 6 21 6"/>
+          <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+          <path d="M10 11v6"/><path d="M14 11v6"/>
+          <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+        </svg>
+      </div>
+      <h2 style="font-size:19px;font-weight:700;margin-bottom:10px;">Delete {{ ma.model.__name__ }}</h2>
+      <p style="color:var(--text-2);font-size:14px;line-height:1.6;margin-bottom:6px;">
+        You are about to permanently delete:
+      </p>
+      <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px 16px;margin:14px 0 24px;font-weight:600;font-size:14px;word-break:break-all;">
+        {{ obj_repr }}
+      </div>
+      <p style="color:#b91c1c;font-size:13px;margin-bottom:28px;">
+        This action <strong>cannot be undone</strong>.
+      </p>
+      <div style="display:flex;gap:10px;justify-content:center;">
+        <a href="{{ admin.prefix }}/{{ model_name }}" class="btn btn-secondary">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
+          </svg>
+          Cancel
+        </a>
+        <form method="post" action="{{ admin.prefix }}/{{ model_name }}/{{ item_id }}/delete">
+          <button type="submit" class="btn btn-danger-solid">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="3 6 5 6 21 6"/>
+              <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+            </svg>
+            Yes, Delete
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

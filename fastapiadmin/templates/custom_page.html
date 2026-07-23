@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block title %}{{ page.label }} — {{ admin.title }}{% endblock %}
+
+{% block breadcrumb %}
+<a href="{{ admin.prefix }}/">{{ admin.title }}</a>
+<span class="breadcrumb-sep">/</span>
+<span class="breadcrumb-cur">{{ page.label }}</span>
+{% endblock %}
+
+{% block content %}
+{{ page_content | safe }}
+{% endblock %}

@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}{{ admin.title }}{% endblock %}</title>
+  <style>
+    :root {
+      --primary: {{ admin.brand_color }};
+      --primary-rgb: 99,102,241;
+      --sidebar-bg: #0f172a;
+      --sidebar-text: #8b92a5;
+      --sidebar-border: rgba(255,255,255,0.06);
+      --bg: #f1f5f9;
+      --surface: #ffffff;
+      --border: #e2e8f0;
+      --text: #0f172a;
+      --text-2: #475569;
+      --text-3: #94a3b8;
+      --danger: #ef4444;
+      --success: #22c55e;
+      --radius: 10px;
+      --shadow: 0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);
+      --shadow-md: 0 4px 12px rgba(0,0,0,.08);
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    html{font-size:15px;}
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.5;}
+    a{color:inherit;text-decoration:none;}
+
+    /* ── Layout ── */
+    .app{display:flex;min-height:100vh;}
+    .sidebar{width:232px;background:var(--sidebar-bg);display:flex;flex-direction:column;position:fixed;top:0;left:0;height:100vh;z-index:40;}
+    .main{margin-left:232px;flex:1;display:flex;flex-direction:column;min-height:100vh;}
+
+    /* ── Sidebar ── */
+    .s-logo{padding:22px 18px 20px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--sidebar-border);}
+    .s-logo-mark{width:30px;height:30px;border-radius:8px;background:var(--primary);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+    .s-logo-mark svg{color:white;}
+    .s-logo-name{color:white;font-weight:700;font-size:14.5px;letter-spacing:-.01em;}
+    .s-logo-tag{color:var(--sidebar-text);font-size:10.5px;font-weight:500;letter-spacing:.04em;text-transform:uppercase;}
+
+    .s-nav{padding:14px 10px;flex:1;overflow-y:auto;}
+    .s-section-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--sidebar-text);padding:8px 8px 6px;opacity:.45;}
+    .nav-link{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:7px;color:var(--sidebar-text);font-size:13.5px;font-weight:500;transition:background .12s,color .12s;margin-bottom:2px;}
+    .nav-link svg{opacity:.7;flex-shrink:0;width:16px;height:16px;}
+    .nav-link:hover{background:rgba(255,255,255,.07);color:#cbd5e1;}
+    .nav-link.active{background:rgba(var(--primary-rgb),.18);color:white;}
+    .nav-link.active svg{opacity:1;}
+    .nav-link .count{margin-left:auto;font-size:11px;background:rgba(255,255,255,.1);color:var(--sidebar-text);padding:1px 7px;border-radius:100px;font-weight:600;}
+
+    .s-footer{padding:14px 10px;border-top:1px solid var(--sidebar-border);}
+
+    /* ── Topbar ── */
+    .topbar{height:57px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 28px;position:sticky;top:0;z-index:30;box-shadow:var(--shadow);}
+    .breadcrumb{display:flex;align-items:center;gap:7px;font-size:13.5px;color:var(--text-2);}
+    .breadcrumb a:hover{color:var(--primary);}
+    .breadcrumb-sep{opacity:.35;font-size:12px;}
+    .breadcrumb-cur{color:var(--text);font-weight:600;}
+    .topbar-right{display:flex;align-items:center;gap:10px;}
+
+    /* ── Content ── */
+    .content{padding:28px 30px;flex:1;}
+    .page-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:22px;gap:16px;}
+    .page-title{font-size:21px;font-weight:700;letter-spacing:-.02em;}
+    .page-sub{font-size:13px;color:var(--text-2);margin-top:3px;}
+
+    /* ── Cards ── */
+    .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);}
+
+    /* ── Buttons ── */
+    .btn{display:inline-flex;align-items:center;gap:6px;padding:7px 15px;border-radius:7px;font-size:13.5px;font-weight:500;border:none;cursor:pointer;transition:all .14s;white-space:nowrap;line-height:1.4;}
+    .btn svg{width:15px;height:15px;}
+    .btn-primary{background:var(--primary);color:#fff;}
+    .btn-primary:hover{filter:brightness(1.08);}
+    .btn-secondary{background:var(--surface);color:var(--text);border:1px solid var(--border);}
+    .btn-secondary:hover{background:#f8fafc;}
+    .btn-ghost{background:transparent;color:var(--text-2);border:1px solid transparent;padding:6px 10px;}
+    .btn-ghost:hover{background:var(--bg);border-color:var(--border);}
+    .btn-danger{background:#fef2f2;color:var(--danger);border:1px solid #fecaca;}
+    .btn-danger:hover{background:#fee2e2;}
+    .btn-danger-solid{background:var(--danger);color:#fff;}
+    .btn-danger-solid:hover{filter:brightness(1.08);}
+    .btn-sm{padding:5px 11px;font-size:12.5px;}
+
+    /* ── Flash ── */
+    .flash-wrap{position:fixed;top:16px;right:20px;z-index:999;}
+    .flash{display:flex;align-items:center;gap:10px;padding:12px 16px;border-radius:9px;font-size:13.5px;font-weight:500;box-shadow:var(--shadow-md);min-width:240px;max-width:380px;}
+    .flash-success{background:#f0fdf4;border:1px solid #bbf7d0;color:#15803d;}
+    .flash-error{background:#fef2f2;border:1px solid #fecaca;color:#b91c1c;}
+    .flash svg{flex-shrink:0;width:16px;height:16px;}
+
+    /* ── Table ── */
+    .table-wrap{overflow-x:auto;}
+    table{width:100%;border-collapse:collapse;}
+    thead th{text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text-3);padding:10px 16px;border-bottom:1px solid var(--border);background:#fafbfc;white-space:nowrap;}
+    tbody td{padding:13px 16px;border-bottom:1px solid var(--border);font-size:13.5px;color:var(--text);vertical-align:middle;}
+    tbody tr:last-child td{border-bottom:none;}
+    tbody tr:hover td{background:#fafbff;}
+    .td-actions{display:flex;align-items:center;gap:6px;}
+
+    /* ── Search bar ── */
+    .toolbar{display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--border);}
+    .search-wrap{position:relative;flex:1;max-width:300px;}
+    .search-ico{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text-3);pointer-events:none;width:15px;height:15px;}
+    .search-input{width:100%;padding:7px 11px 7px 32px;border:1px solid var(--border);border-radius:7px;font-size:13.5px;outline:none;background:var(--bg);transition:border-color .15s,box-shadow .15s;color:var(--text);}
+    .search-input:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(var(--primary-rgb),.1);background:#fff;}
+
+    /* ── Pagination ── */
+    .pager{display:flex;align-items:center;gap:4px;padding:14px 16px;border-top:1px solid var(--border);}
+    .pager-info{margin-left:auto;font-size:12.5px;color:var(--text-3);}
+    .page-btn{width:31px;height:31px;display:flex;align-items:center;justify-content:center;border-radius:6px;border:1px solid var(--border);background:var(--surface);color:var(--text-2);font-size:13px;cursor:pointer;text-decoration:none;transition:all .12s;}
+    .page-btn:hover{background:var(--bg);}
+    .page-btn.active{background:var(--primary);color:#fff;border-color:var(--primary);font-weight:700;}
+    .page-btn.dots{border-color:transparent;background:none;cursor:default;}
+
+    /* ── Form ── */
+    .form-body{padding:24px 28px;}
+    .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 24px;}
+    .form-group{margin-bottom:18px;}
+    .form-label{display:block;font-size:13px;font-weight:600;color:var(--text);margin-bottom:6px;}
+    .form-label .req{color:var(--danger);margin-left:2px;}
+    .form-control{width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:7px;font-size:13.5px;color:var(--text);background:#fff;outline:none;transition:border-color .15s,box-shadow .15s;font-family:inherit;}
+    .form-control:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(var(--primary-rgb),.1);}
+    .form-control[readonly]{background:var(--bg);color:var(--text-2);}
+    textarea.form-control{min-height:96px;resize:vertical;line-height:1.5;}
+    select.form-control{cursor:pointer;}
+    .form-hint{font-size:12px;color:var(--text-3);margin-top:5px;}
+    .form-error{font-size:12.5px;color:var(--danger);margin-top:5px;}
+    .form-actions{display:flex;align-items:center;gap:10px;padding:18px 28px;border-top:1px solid var(--border);background:#fafbfc;border-radius:0 0 var(--radius) var(--radius);}
+    .checkbox-row{display:flex;align-items:center;gap:9px;padding:8px 0;}
+    .checkbox-row input{width:17px;height:17px;accent-color:var(--primary);cursor:pointer;}
+    .checkbox-row label{font-size:13.5px;cursor:pointer;}
+
+    /* ── Stat cards ── */
+    .stats-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;margin-bottom:24px;}
+    .stat-card{display:flex;align-items:center;gap:14px;padding:18px 20px;}
+    .stat-icon{width:42px;height:42px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+    .stat-icon svg{width:20px;height:20px;}
+    .stat-lbl{font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text-3);}
+    .stat-val{font-size:27px;font-weight:800;letter-spacing:-.03em;line-height:1.1;margin-top:2px;}
+    .stat-link{font-size:12px;color:var(--primary);font-weight:500;margin-top:4px;display:inline-block;}
+    .stat-link:hover{text-decoration:underline;}
+
+    /* ── Badges ── */
+    .badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:100px;font-size:11.5px;font-weight:600;}
+    .badge-green{background:#f0fdf4;color:#16a34a;border:1px solid #bbf7d0;}
+    .badge-red{background:#fef2f2;color:#dc2626;border:1px solid #fecaca;}
+    .badge-gray{background:#f8fafc;color:#64748b;border:1px solid #e2e8f0;}
+
+    /* ── Empty state ── */
+    .empty{text-align:center;padding:60px 24px;}
+    .empty-ico{font-size:38px;opacity:.3;margin-bottom:12px;}
+    .empty h3{font-size:16px;font-weight:600;margin-bottom:6px;}
+    .empty p{font-size:13.5px;color:var(--text-2);}
+
+    /* ── Delete confirm overlay ── */
+    .confirm-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:500;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .2s;}
+    .confirm-overlay.visible{opacity:1;}
+    .confirm-box{background:#fff;border-radius:14px;padding:30px 28px;max-width:380px;width:calc(100% - 32px);box-shadow:0 25px 60px rgba(0,0,0,.25);transform:translateY(12px);transition:transform .2s;}
+    .confirm-overlay.visible .confirm-box{transform:translateY(0);}
+    .confirm-icon{width:52px;height:52px;border-radius:12px;background:#fef2f2;color:var(--danger);display:flex;align-items:center;justify-content:center;margin-bottom:16px;}
+    .confirm-title{font-size:17px;font-weight:700;margin-bottom:8px;}
+    .confirm-msg{font-size:13.5px;color:var(--text-2);margin-bottom:22px;line-height:1.5;}
+    .confirm-actions{display:flex;gap:10px;justify-content:flex-end;}
+
+    /* ── Misc ── */
+    .section-title{font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-3);margin-bottom:14px;}
+    .global-error{background:#fef2f2;border:1px solid #fecaca;color:#b91c1c;padding:12px 16px;border-radius:7px;font-size:13.5px;margin-bottom:18px;}
+
+    @media(max-width:768px){
+      .sidebar{display:none;}
+      .main{margin-left:0;}
+      .content{padding:16px;}
+      .form-grid{grid-template-columns:1fr;}
+    }
+  </style>
+</head>
+<body>
+<div class="app">
+  <!-- Sidebar -->
+  <nav class="sidebar">
+    <div class="s-logo">
+      <div class="s-logo-mark">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/>
+          <rect x="14" y="14" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/>
+        </svg>
+      </div>
+      <div>
+        <div class="s-logo-name">{{ admin.title }}</div>
+        <div class="s-logo-tag">Admin Panel</div>
+      </div>
+    </div>
+
+    <div class="s-nav">
+      <div class="s-section-lbl">Overview</div>
+      <a class="nav-link {% if request.url.path == admin.prefix + '/' or request.url.path == admin.prefix %}active{% endif %}"
+         href="{{ admin.prefix }}/">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="3" width="7" height="9" rx="1.5"/>
+          <rect x="14" y="3" width="7" height="5" rx="1.5"/>
+          <rect x="14" y="12" width="7" height="9" rx="1.5"/>
+          <rect x="3" y="16" width="7" height="5" rx="1.5"/>
+        </svg>
+        Dashboard
+      </a>
+
+      {% if registry %}
+      <div class="s-section-lbl" style="margin-top:18px;">Models</div>
+      {% for key, ma in registry.items() %}
+      <a class="nav-link {% if admin.prefix + '/' + key in request.url.path %}active{% endif %}"
+         href="{{ admin.prefix }}/{{ key }}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <ellipse cx="12" cy="5" rx="9" ry="3"/>
+          <path d="M3 5v5c0 1.66 4.03 3 9 3s9-1.34 9-3V5"/>
+          <path d="M3 10v5c0 1.66 4.03 3 9 3s9-1.34 9-3v-5"/>
+          <path d="M3 15v4c0 1.66 4.03 3 9 3s9-1.34 9-3v-4"/>
+        </svg>
+        {{ ma.verbose_name_plural }}
+      </a>
+      {% endfor %}
+      {% endif %}
+
+      {% if admin._pages %}
+      <div class="s-section-lbl" style="margin-top:18px;">Custom</div>
+      {% for slug, cp in admin._pages.items() %}
+      <a class="nav-link {% if admin.prefix + '/pages/' + slug in request.url.path %}active{% endif %}"
+         href="{{ admin.prefix }}/pages/{{ slug }}">
+        {{ cp.icon_svg(16) | safe }}
+        {{ cp.label }}
+      </a>
+      {% endfor %}
+      {% endif %}
+    </div>
+
+    {% if admin.auth_enabled %}
+    <div class="s-footer">
+      <a class="nav-link" href="{{ admin.prefix }}/logout">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+          <polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
+        </svg>
+        Sign Out
+      </a>
+    </div>
+    {% endif %}
+  </nav>
+
+  <!-- Main -->
+  <div class="main">
+    <header class="topbar">
+      <div class="breadcrumb">
+        {% block breadcrumb %}
+        <a href="{{ admin.prefix }}/">{{ admin.title }}</a>
+        {% endblock %}
+      </div>
+      <div class="topbar-right">
+        {% block topbar_actions %}{% endblock %}
+      </div>
+    </header>
+
+    <div class="content">
+      {% if flash %}
+      <div class="flash-wrap">
+        <div class="flash flash-{{ flash.kind }}" id="flash-msg">
+          {% if flash.kind == 'success' %}
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
+          </svg>
+          {% else %}
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+          </svg>
+          {% endif %}
+          {{ flash.msg }}
+        </div>
+      </div>
+      {% endif %}
+
+      {% block content %}{% endblock %}
+    </div>
+  </div>
+</div>
+<script src="{{ admin.prefix }}/static/admin.js"></script>
+</body>
+</html>

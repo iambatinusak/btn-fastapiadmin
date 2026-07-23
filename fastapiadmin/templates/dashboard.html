@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard — {{ admin.title }}{% endblock %}
+
+{% block breadcrumb %}
+<a href="{{ admin.prefix }}/">{{ admin.title }}</a>
+<span class="breadcrumb-sep">/</span>
+<span class="breadcrumb-cur">Dashboard</span>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <div class="page-title">Dashboard</div>
+    <div class="page-sub">Welcome back. Here's what's happening in your database.</div>
+  </div>
+</div>
+
+{% if stats %}
+<div class="stats-grid">
+  {% set colors = ["#6366f1","#0ea5e9","#22c55e","#f59e0b","#ec4899","#8b5cf6","#14b8a6","#f97316"] %}
+  {% for s in stats %}
+  {% set color = colors[loop.index0 % colors|length] %}
+  <div class="card stat-card">
+    <div class="stat-icon" style="background:{{ color }}18;color:{{ color }};">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <ellipse cx="12" cy="5" rx="9" ry="3"/>
+        <path d="M3 5v5c0 1.66 4.03 3 9 3s9-1.34 9-3V5"/>
+        <path d="M3 10v5c0 1.66 4.03 3 9 3s9-1.34 9-3v-5"/>
+        <path d="M3 15v4c0 1.66 4.03 3 9 3s9-1.34 9-3v-4"/>
+      </svg>
+    </div>
+    <div>
+      <div class="stat-lbl">{{ s.name }}</div>
+      <div class="stat-val" style="color:{{ color }};">{{ s.count }}</div>
+      <a class="stat-link" href="{{ admin.prefix }}/{{ s.key }}">View all →</a>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<div class="section-title">Registered Models</div>
+<div class="card">
+  {% if registry %}
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Model</th>
+          <th>Records</th>
+          <th>Fields shown</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for s in stats %}
+        <tr>
+          <td style="font-weight:600;">{{ s.name }}</td>
+          <td>
+            <span class="badge badge-gray">{{ s.count }}</span>
+          </td>
+          <td style="color:var(--text-2);font-size:13px;">
+            {{ registry[s.key].list_display | join(", ") }}
+          </td>
+          <td>
+            <div class="td-actions">
+              <a href="{{ admin.prefix }}/{{ s.key }}" class="btn btn-secondary btn-sm">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                  <circle cx="12" cy="12" r="3"/>
+                </svg>
+                Browse
+              </a>
+              <a href="{{ admin.prefix }}/{{ s.key }}/new" class="btn btn-primary btn-sm">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                </svg>
+                Add
+              </a>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty">
+    <div class="empty-ico">📋</div>
+    <h3>No models registered</h3>
+    <p>Use <code>admin.register(YourModel)</code> to add models to the panel.</p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

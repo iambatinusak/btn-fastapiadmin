@@ -1,0 +1,173 @@
+{% extends "base.html" %}
+
+{% set is_edit = obj is not none and item_id is defined %}
+{% set action_label = "Edit" if is_edit else "Add" %}
+
+{% block title %}{{ action_label }} {{ ma.model.__name__ }} — {{ admin.title }}{% endblock %}
+
+{% block breadcrumb %}
+<a href="{{ admin.prefix }}/">{{ admin.title }}</a>
+<span class="breadcrumb-sep">/</span>
+<a href="{{ admin.prefix }}/{{ model_name }}">{{ ma.verbose_name_plural }}</a>
+<span class="breadcrumb-sep">/</span>
+<span class="breadcrumb-cur">{{ action_label }}</span>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <div class="page-title">{{ action_label }} {{ ma.model.__name__ }}</div>
+    <div class="page-sub">
+      {% if is_edit %}Editing record #{{ item_id }}{% else %}Create a new record{% endif %}
+    </div>
+  </div>
+  <a href="{{ admin.prefix }}/{{ model_name }}" class="btn btn-secondary">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
+    </svg>
+    Back
+  </a>
+</div>
+
+<form
+  method="post"
+  action="{{ admin.prefix }}/{{ model_name }}/{% if is_edit %}{{ item_id }}/edit{% else %}new{% endif %}"
+  enctype="application/x-www-form-urlencoded"
+>
+  <div class="card">
+    {% if errors.__all__ %}
+    <div class="form-body" style="padding-bottom:0;">
+      <div class="global-error">
+        <strong>Error:</strong> {{ errors.__all__ }}
+      </div>
+    </div>
+    {% endif %}
+
+    <div class="form-body">
+      <!-- Split fields into two columns, but textareas span full width -->
+      {% set regular_fields = fields | selectattr("is_textarea", "equalto", false) | selectattr("is_checkbox", "equalto", false) | list %}
+      {% set textarea_fields = fields | selectattr("is_textarea", "equalto", true) | list %}
+      {% set checkbox_fields = fields | selectattr("is_checkbox", "equalto", true) | list %}
+
+      {% if regular_fields %}
+      <div class="form-grid">
+        {% for f in regular_fields %}
+        <div class="form-group">
+          <label class="form-label" for="f_{{ f.name }}">
+            {{ f.name | replace("_", " ") | title }}
+            {% if f.required %}<span class="req">*</span>{% endif %}
+          </label>
+          {% if f.readonly %}
+          <input
+            class="form-control"
+            id="f_{{ f.name }}"
+            type="{{ f.input_type }}"
+            value="{{ (obj[f.name] if obj and obj[f.name] is not none else '') | string | replace('None','') }}"
+            readonly
+          />
+          {% elif f.is_select %}
+          <select class="form-control" id="f_{{ f.name }}" name="{{ f.name }}" {% if f.required %}required{% endif %}>
+            <option value="">— select —</option>
+            {% for choice in f.select_choices %}
+            <option value="{{ choice }}"
+              {% if obj and obj[f.name] | string == choice %}selected{% endif %}>
+              {{ choice }}
+            </option>
+            {% endfor %}
+          </select>
+          {% else %}
+          <input
+            class="form-control"
+            id="f_{{ f.name }}"
+            type="{{ f.input_type }}"
+            name="{{ f.name }}"
+            {% if f.step %}step="{{ f.step }}"{% endif %}
+            {% if f.required %}required{% endif %}
+            value="{{ (obj[f.name] if obj and obj[f.name] is not none else '') | string | replace('None','') }}"
+            {% if f.input_type == 'datetime-local' and obj and obj[f.name] %}
+            value="{{ obj[f.name] | string | replace(' ', 'T') | truncate(16, true, '') }}"
+            {% endif %}
+          />
+          {% endif %}
+          {% if f.name in errors %}
+          <div class="form-error">{{ errors[f.name] }}</div>
+          {% endif %}
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      {% for f in textarea_fields %}
+      <div class="form-group">
+        <label class="form-label" for="f_{{ f.name }}">
+          {{ f.name | replace("_", " ") | title }}
+          {% if f.required %}<span class="req">*</span>{% endif %}
+        </label>
+        {% if f.readonly %}
+        <textarea class="form-control" id="f_{{ f.name }}" readonly>{{ (obj[f.name] if obj and obj[f.name] is not none else '') }}</textarea>
+        {% else %}
+        <textarea
+          class="form-control"
+          id="f_{{ f.name }}"
+          name="{{ f.name }}"
+          {% if f.required %}required{% endif %}
+        >{{ (obj[f.name] if obj and obj[f.name] is not none else '') | string | replace('None','') }}</textarea>
+        {% endif %}
+        {% if f.name in errors %}
+        <div class="form-error">{{ errors[f.name] }}</div>
+        {% endif %}
+      </div>
+      {% endfor %}
+
+      {% if checkbox_fields %}
+      <div class="form-group">
+        <div class="form-label">Options</div>
+        {% for f in checkbox_fields %}
+        <div class="checkbox-row">
+          <input
+            type="checkbox"
+            id="f_{{ f.name }}"
+            name="{{ f.name }}"
+            value="on"
+            {% if obj and obj[f.name] %}checked{% endif %}
+            {% if f.readonly %}disabled{% endif %}
+          />
+          <label for="f_{{ f.name }}">{{ f.name | replace("_", " ") | title }}</label>
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      {% if not fields %}
+      <div class="empty">
+        <div class="empty-ico">📝</div>
+        <h3>No editable fields</h3>
+        <p>All fields may be excluded or read-only.</p>
+      </div>
+      {% endif %}
+    </div>
+
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+          <polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/>
+        </svg>
+        {% if is_edit %}Save Changes{% else %}Create {{ ma.model.__name__ }}{% endif %}
+      </button>
+      <a href="{{ admin.prefix }}/{{ model_name }}" class="btn btn-secondary">Cancel</a>
+      {% if is_edit %}
+      <a href="{{ admin.prefix }}/{{ model_name }}/{{ item_id }}/delete"
+         class="btn btn-danger" style="margin-left:auto;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="3 6 5 6 21 6"/>
+          <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+          <path d="M10 11v6"/><path d="M14 11v6"/>
+        </svg>
+        Delete
+      </a>
+      {% endif %}
+    </div>
+  </div>
+</form>
+{% endblock %}
