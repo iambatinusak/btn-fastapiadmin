@@ -5,7 +5,7 @@ A beautiful, minimal admin panel for **FastAPI** + **SQLAlchemy**.
 ## Install
 
 ```bash
-pip install fastapiadmin
+pip install btn-fastapiadmin
 ```
 
 ## Quick Start
